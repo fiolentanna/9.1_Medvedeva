@@ -1,0 +1,501 @@
+{
+	"info": {
+		"_postman_id": "a632868d-978a-453e-bfc8-7ed05d4ccdc6",
+		"name": "Create and change task iterations 2",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "14921549"
+	},
+	"item": [
+		{
+			"name": "login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let jsonData = pm.response.json();",
+							"pm.environment.set('token', jsonData.id_token)",
+							"",
+							"pm.test(\"Response body has the required properties and structure\", function () {",
+							"  var response = pm.response.json();",
+							"  pm.expect(response).to.have.property('id_token');",
+							"  pm.expect(response.id_token).to.be.a('string');",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json, text/plain, */*"
+					},
+					{
+						"key": "Accept-Language",
+						"value": "en-US,en;q=0.9,it-IT;q=0.8,it;q=0.7,fr-FR;q=0.6,fr;q=0.5,de-DE;q=0.4,de;q=0.3,ru;q=0.2"
+					},
+					{
+						"key": "Connection",
+						"value": "keep-alive"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Origin",
+						"value": "https://sqlverifier-50d286d70656.herokuapp.com"
+					},
+					{
+						"key": "Referer",
+						"value": "https://sqlverifier-50d286d70656.herokuapp.com/login"
+					},
+					{
+						"key": "Sec-Fetch-Dest",
+						"value": "empty"
+					},
+					{
+						"key": "Sec-Fetch-Mode",
+						"value": "cors"
+					},
+					{
+						"key": "Sec-Fetch-Site",
+						"value": "same-origin"
+					},
+					{
+						"key": "User-Agent",
+						"value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
+					},
+					{
+						"key": "sec-ch-ua",
+						"value": "\"Google Chrome\";v=\"119\", \"Chromium\";v=\"119\", \"Not?A_Brand\";v=\"24\""
+					},
+					{
+						"key": "sec-ch-ua-mobile",
+						"value": "?0"
+					},
+					{
+						"key": "sec-ch-ua-platform",
+						"value": "\"macOS\""
+					},
+					{
+						"key": "x-mock-match-request-headers",
+						"value": "400",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"username\":\"{{adminLogin}}\",\"password\":\"{{adminPassword}}\",\"rememberMe\":false}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/authenticate",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"authenticate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get tasks list",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Test for response schema",
+							"pm.test(\"Response has a valid schema\", function () {",
+							"    var schema = {",
+							"        type: \"array\",",
+							"        items: {",
+							"            type: \"object\",",
+							"            properties: {",
+							"                id: { type: \"number\" },",
+							"                text: { type: \"string\" },",
+							"                answer: { type: \"string\" },",
+							"                title: { type: \"string\" }",
+							"            },",
+							"            required: [\"id\", \"text\", \"answer\", \"title\"]",
+							"        }",
+							"    };",
+							"    pm.expect(tv4.validate(pm.response.json(), schema)).to.be.true;",
+							"});",
+							"",
+							"// Получаем текущее количество задач из ответа",
+							"let currentAmountOfTasks = pm.response.json().length;",
+							"console.log(pm.response.json().length)",
+							"",
+							"// Устанавливаем идентификатор последней задачи из списка в переменную окружения",
+							"pm.environment.set('lastID', pm.response.json()[pm.response.json().length-1].id);",
+							"",
+							"",
+							"// Устанавливаем текущее количество задач в переменную окружения",
+							"pm.environment.set('currentAmountOfTasks', currentAmountOfTasks);",
+							"",
+							"// Устанавливаем пустой массив айди тасок в переменную окружения",
+							"pm.environment.set(\"ids\", []);",
+							"",
+							"// Устанавливаем условия реализации запросов в зависимости от количества тасок в базе данных и целевого значения количества тасок",
+							"if (currentAmountOfTasks < pm.environment.get('targetNumberOfTasks')) {",
+							"    // Если текущее количество задач меньше целевого, переходим к запросу \"create a task\"",
+							"    postman.setNextRequest('create a task');",
+							"} else {",
+							"    // Иначе переходим к запросу \"change task text\"",
+							"    postman.setNextRequest('change task text');",
+							"}",
+							"",
+							"// Проверяем статус-код ответа 200",
+							"pm.test(\"Response status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "accept",
+						"value": "*/*"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTcwMDY1MTA3OCwiYXV0aCI6IlJPTEVfQURNSU4iLCJpYXQiOjE3MDA1NjQ2Nzh9.vIN53s5RHi0_NuFKchJ3Wxi3ajjjtTt_0X_qJSYtFti7Xw4Veqy9jEpRervasFgwCyrZGihIehGmwaUXLYIaFg"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/tasks?page=0&size=2000",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"tasks"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "2000"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create a task",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//Получаем данные из ответа в формате JSON",
+							"let jsonData = pm.response.json();",
+							"",
+							"// Test for response schema",
+							"pm.test(\"Response schema is valid\", function () {",
+							"    pm.response.to.have.status(201);",
+							"",
+							"    // Validate the response schema",
+							"    pm.expect(jsonData).to.have.property('id');",
+							"    pm.expect(jsonData).to.have.property('text');",
+							"    pm.expect(jsonData).to.have.property('answer');",
+							"    pm.expect(jsonData).to.have.property('title');",
+							"});",
+							"",
+							"// Проверяем, что значение поля \"text\" в ответе соответствует ожидаемому тексту",
+							"pm.test(\"Проверка значения поля \\\"text\\\"\", function () {",
+							"    pm.expect(jsonData.text).to.eql(\"some text\");",
+							"});",
+							"",
+							"// Получаем массив идентификаторов из переменных окружения",
+							"const ids = pm.environment.get(\"ids\");",
+							"",
+							"// Добавляем новый идентификатор в массив идентификаторов",
+							"ids.push(jsonData.id);",
+							"",
+							"// Устанавливаем обновленный массив идентификаторов в переменную окружения",
+							"pm.environment.set(\"ids\", ids);",
+							"",
+							"// Устанавливаем значение последнего идентификатора в переменную окружения",
+							"pm.environment.set('lastID', jsonData.id);",
+							"",
+							"// Получаем текущее количество задач из переменных окружения",
+							"let currentAmountOfTasks = pm.environment.get(\"currentAmountOfTasks\");",
+							"",
+							"// Увеличиваем счетчик текущего количества задач на 1",
+							"currentAmountOfTasks++;",
+							"",
+							"// Устанавливаем обновленное количество задач в переменную окружения",
+							"pm.environment.set('currentAmountOfTasks', currentAmountOfTasks);",
+							"",
+							"// Устанавливаем следующий запрос в зависимости от текущего количества задач",
+							"if (currentAmountOfTasks < pm.environment.get('targetNumberOfTasks')) {",
+							"    postman.setNextRequest(\"create a task\");",
+							"} else {",
+							"    postman.setNextRequest('change task text');",
+							"}",
+							"pm.test(\"Your test name\", function () {",
+							"    pm.expect(jsonData.text).to.eql(\"some text\");",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "accept",
+						"value": "*/*"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTcwMDY1MTA3OCwiYXV0aCI6IlJPTEVfQURNSU4iLCJpYXQiOjE3MDA1NjQ2Nzh9.vIN53s5RHi0_NuFKchJ3Wxi3ajjjtTt_0X_qJSYtFti7Xw4Veqy9jEpRervasFgwCyrZGihIehGmwaUXLYIaFg"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"text\": \"some text\",\n  \"answer\": \"string\",\n  \"title\": \"string\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/tasks",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"tasks"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "change task text",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"",
+							"pm.test(\"Response status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"pm.test(\"Response status code is 200\", function () {",
+							"  pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Schema is valid\", function () {",
+							"  var schema = {",
+							"    type: \"object\",",
+							"    properties: {",
+							"      id: { type: \"number\" },",
+							"      text: { type: \"string\" },",
+							"      answer: { type: \"string\" },",
+							"      title: { type: \"string\" }",
+							"    },",
+							"    required: [\"id\", \"text\", \"answer\", \"title\"]",
+							"  };",
+							"",
+							"  var response = pm.response.json();",
+							"  pm.expect(tv4.validate(response, schema)).to.be.true;",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "accept",
+						"value": "*/*"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTcwMDY1MTA3OCwiYXV0aCI6IlJPTEVfQURNSU4iLCJpYXQiOjE3MDA1NjQ2Nzh9.vIN53s5RHi0_NuFKchJ3Wxi3ajjjtTt_0X_qJSYtFti7Xw4Veqy9jEpRervasFgwCyrZGihIehGmwaUXLYIaFg"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"id\": \"{{lastID}}\",\n  \"text\": \"some new new text\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/tasks/{{lastID}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"tasks",
+						"{{lastID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get task data",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Schema is valid\", function () {",
+							"  var schema = {",
+							"    type: \"object\",",
+							"    properties: {",
+							"      id: { type: \"number\" },",
+							"      text: { type: \"string\" },",
+							"      answer: { type: \"string\" },",
+							"      title: { type: \"string\" }",
+							"    },",
+							"    required: [\"id\", \"text\", \"answer\", \"title\"]",
+							"  };",
+							"",
+							"  var response = pm.response.json();",
+							"  pm.expect(tv4.validate(response, schema)).to.be.true;",
+							"});",
+							"",
+							"// Получаем массив идентификаторов из переменных окружения",
+							"let arr = pm.environment.get('ids')",
+							"",
+							"// Получаем базовый URL из переменных окружения",
+							"let baseUrl = pm.environment.get('baseUrl')",
+							"",
+							"// Удаление всех созданных тасок, которые хранятся в массиве с id тасок",
+							"arr.forEach((id)=>{",
+							"    pm.sendRequest(",
+							"        {url: `${baseUrl}/tasks/${id}`,",
+							"        method: 'DELETE',",
+							"        header:",
+							"        {'Authorization': 'Bearer ' + pm.environment.get('token'),",
+							"        'accept': '*/*'}",
+							"        }",
+							"        , function (err, response) {",
+							"        console.log(response);",
+							"    });",
+							"})",
+							"",
+							"// Удаляем переменные из окружения для очистки базы данных после завершения тестирования",
+							"pm.environment.unset('lastID');",
+							"pm.environment.unset('targetNumberOfTasks');",
+							"pm.environment.unset('currentAmountOfTasks');",
+							"pm.environment.unset('ids');",
+							"pm.environment.unset('token');",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "accept",
+						"value": "*/*"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTcwMDY1MTA3OCwiYXV0aCI6IlJPTEVfQURNSU4iLCJpYXQiOjE3MDA1NjQ2Nzh9.vIN53s5RHi0_NuFKchJ3Wxi3ajjjtTt_0X_qJSYtFti7Xw4Veqy9jEpRervasFgwCyrZGihIehGmwaUXLYIaFg"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/tasks/{{lastID}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"tasks",
+						"{{lastID}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

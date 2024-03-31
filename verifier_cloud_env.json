@@ -1,0 +1,27 @@
+{
+	"id": "b195704b-3100-46a4-acc7-be7bf1c45956",
+	"name": "verifier_cloud",
+	"values": [
+		{
+			"key": "baseUrl",
+			"value": "https://sqlverifier-live-6e21ca0ed768.herokuapp.com/api",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "adminLogin",
+			"value": "busya2024_admin",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "adminPassword",
+			"value": "busya2024_admin",
+			"type": "default",
+			"enabled": true
+		}
+	],
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2024-03-30T23:23:53.631Z",
+	"_postman_exported_using": "Postman/10.24.11"
+}
